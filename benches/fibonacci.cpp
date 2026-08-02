@@ -35,7 +35,7 @@ static void BM_Fibonacci(benchmark::State &state) {
   // This loop runs multiple times to get accurate measurements
   for (auto _ : state) {
     // Prevent compiler from optimizing away the computation
-    auto result = ft_fibonacci(n);
+    auto result = fibonacci(n);
     benchmark::DoNotOptimize(result);
   }
 }
