@@ -1,5 +1,25 @@
 #include <benchmark/benchmark.h>
 
+long long	additive_sequence(long long index, long long n0, long long n1)
+{
+	if (index == 0)
+		return (n0);
+	if (index == 1)
+		return (n1);
+	return (additive_sequence(index - 1, n1, n0 + n1));
+}
+
+long long	ft_fibonacci(int index)
+{
+	if (index < 0)
+		return (-1);
+	if (index < 2 && index >= 0)
+		return (index);
+	else
+		return (additive_sequence(index, 0, 1));
+}
+
+
 // Recursive Fibonacci function to benchmark
 static long long fibonacci(int n) {
   if (n <= 1)
@@ -15,7 +35,7 @@ static void BM_Fibonacci(benchmark::State &state) {
   // This loop runs multiple times to get accurate measurements
   for (auto _ : state) {
     // Prevent compiler from optimizing away the computation
-    auto result = fibonacci(n);
+    auto result = ft_fibonacci(n);
     benchmark::DoNotOptimize(result);
   }
 }
