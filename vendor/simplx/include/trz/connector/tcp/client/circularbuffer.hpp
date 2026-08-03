@@ -158,7 +158,6 @@ template <size_t _Capacity> class CircularBuffer
         else
         {
             // [___R####W_____]
-            assert(m_writerIndex >= 0);
             assert(m_writerIndex <= _Capacity);
             const size_t spaceAtEnd   = _Capacity - m_writerIndex;
             const size_t toWriteAtEnd = min(size, spaceAtEnd);
@@ -303,7 +302,6 @@ template <size_t _Capacity> class CircularBuffer
         else
         {
             // contiguous chunk
-            assert(m_readerIndex >= 0);
             assert(m_readerIndex <= _Capacity);
             const size_t spaceAtEnd  = _Capacity - m_readerIndex;
             const size_t toReadAtEnd = min(size, spaceAtEnd);

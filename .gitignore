@@ -68,6 +68,9 @@ vcpkg_installed/
 Testing/
 .cache/
 
+# vendored third-party checkouts (fetched, not committed)
+vendor/simplx/thirdparty/
+
 # Python
 .venv/
 venv/

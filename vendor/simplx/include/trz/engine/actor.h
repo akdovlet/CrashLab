@@ -58,7 +58,9 @@ struct FeatureNotImplementedException : std::exception
  * @param e std::exception
  * @note optionally break to debugger before throwing exception
  */
-inline void breakThrow(const std::exception &e) throw()
+// no exception specification: since C++17 (P0003R5) throw() means noexcept, and this
+// function's whole purpose is to throw -- keeping it would terminate() every caller
+inline void breakThrow(const std::exception &e)
 {
     TRZ_DEBUG_BREAK();
 
@@ -1843,8 +1845,10 @@ public:
     bool isRegisteredHighPriorityEventHandler(EventId) const noexcept;
     bool isRegisteredEventHandler(EventId) const noexcept;
     bool isRegisteredUndeliveredEventHandler(EventId) const noexcept;
-    void registerCallback(void (*onCallback)(Callback &) /*noexcept*/, Callback &) noexcept;
-    void registerPerformanceNeutralCallback(void (*onCallback)(Callback &) /*noexcept*/, Callback &) noexcept;
+    // noexcept is part of the function-pointer type since C++17 (P0012R1): it must be
+    // spelled here to match actor.cpp and the Callback::onCallback member type
+    void registerCallback(void (*onCallback)(Callback &) noexcept, Callback &) noexcept;
+    void registerPerformanceNeutralCallback(void (*onCallback)(Callback &) noexcept, Callback &) noexcept;
     Actor *getSingletonActor(SingletonActorIndex) noexcept;
     void reserveSingletonActor(SingletonActorIndex); // throw (CircularReferenceException)
     void setSingletonActor(SingletonActorIndex, Actor &) noexcept;

@@ -200,6 +200,13 @@ class DateTime : public Time
     {
     }
     
+    /**
+     * @brief Default copy constructor
+     * @note must be declared: the user-provided operator= below deprecates the
+     * implicit one (-Wdeprecated-copy), and Time already declares its own
+     */
+    DateTime(const DateTime &) noexcept = default;
+
     DateTime &operator=(const DateTime &t) noexcept
     {
         Time::operator=(t);

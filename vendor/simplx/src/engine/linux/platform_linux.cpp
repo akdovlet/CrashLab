@@ -80,9 +80,16 @@ string  GetHostnameIP(const string &name)
 
 //---- Exec (linux) command ----------------------------------------------------
 
+// deleter as a class type: decltype(&pclose) carries glibc function attributes
+// that GCC 13 rejects as a template argument (-Werror=ignored-attributes)
+struct PcloseDeleter
+{
+    void operator()(FILE *fp) const noexcept { ::pclose(fp); }
+};
+
 vector<string> exec_command(const string cmd_s, const bool strip_whitespace_f)
 {
-    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd_s.c_str(), "r"), pclose);
+    unique_ptr<FILE, PcloseDeleter> pipe(popen(cmd_s.c_str(), "r"));
     if (!pipe)  return {"error: popen() failed"};
     
     array<char, 512>    ascii_buffer;

@@ -11,7 +11,7 @@
 #include "simplx.h"
 #include "trz/connector/tcpconnector.hpp"
 #include "trz/connector/http/server/server.hpp"
-#include "trz/util/timer.h"
+// #include "trz/util/timer.h"  -- header does not exist in this repo and nothing here uses it
 
 #include <fstream>
 #include <sstream>
