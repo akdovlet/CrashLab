@@ -49,6 +49,24 @@ English term alongside, since virtually all the reading will be in English.
 
 <!-- one line per closed ticket: gist + link -->
 
+- [Does Simplx build and run here?](issues/01-does-simplx-build-and-run-here.md)
+  — **usable with patches.** 5 files, +23/−7, and it works: 13/13 tutorials build
+  and run at C++17, 14/14 unit tests pass, cross-core messaging and the timer both
+  verified. **The Exchange A contingency does not fire.** One patch (a
+  `decltype(&pclose)` template argument GCC 13 rejects) was blocking the C++11
+  build too — that is why `vendor/simplx/build/` never existed. Three of ticket
+  06's findings confirmed, one of them worse than described: **`-DCMAKE_CXX_FLAGS
+  ="-std=c++17"` is silently ignored** (`--std=c++11` is appended after it), so
+  always use `-DCMAKE_CXX_STANDARD=17`. The **event-POD leak hides below the SSO
+  threshold** — tutorial 03 is Valgrind-clean until you lengthen the string past
+  15 chars, then 172 bytes lost. `breakThrow`'s `throw()` was aborting the process
+  on every event-allocator `bad_alloc`, in C++11 too. Ticket 14 gets a seam:
+  `TimerActor::onCallback()` is `virtual`. New: **the engine busy-spins a core at
+  100%**, so wall-clock benchmarking is meaningless and `benches/` needs to
+  measure bounded event batches.
+  Deliverable: [`research/01-simplx-build-and-run.md`](research/01-simplx-build-and-run.md),
+  patch: [`research/01-simplx-cpp17.patch`](research/01-simplx-cpp17.patch).
+
 - [Reading list: order books and market microstructure](issues/03-reading-order-books-microstructure.md)
   — ~20 sources, six stages; **~28–32 h and one book to buy** (Harris ch. 2/3/4/6)
   before M2, everything else free. The subject's order state machine **is FIX 4.4**
@@ -116,9 +134,16 @@ English term alongside, since virtually all the reading will be in English.
   incidental infrastructure to be handled as they arise.
 - **What is genuinely learnable in M10 (KYC/AML)** versus what is CRUD, RBAC and
   field encryption that teaches nothing about markets.
-- **How the route handles a Simplx failure.** If Simplx cannot be made to work,
-  the entire Exchange A branch needs a different shape. Can't be specified until
-  we know. (Partly graduated: the determinism half is now ticket 14.)
+- ~~**How the route handles a Simplx failure.**~~ **Resolved by ticket 01** —
+  Simplx builds, runs and passes its tests at C++17 with a 30-line patch set.
+  Exchange A keeps its planned shape. The determinism half remains open as
+  ticket 14, which now has a concrete seam to work with.
+
+- **How to benchmark an engine that busy-spins.** Surfaced by ticket 01: Simplx
+  pegs one core per node at 100% whether or not there is work, so throughput is
+  bounded by loop iterations rather than by work done. The repo already has
+  `benches/` and a CodSpeed workflow. Needs settling before the benchmark
+  milestone, or M11 measures the spin loop.
 
 ## Out of scope
 

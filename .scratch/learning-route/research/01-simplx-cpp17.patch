@@ -1,0 +1,101 @@
+diff --git a/vendor/simplx/include/trz/connector/http/server/serverprocess.hpp b/vendor/simplx/include/trz/connector/http/server/serverprocess.hpp
+index 5b1b59c..0bfc6ac 100644
+--- a/vendor/simplx/include/trz/connector/http/server/serverprocess.hpp
++++ b/vendor/simplx/include/trz/connector/http/server/serverprocess.hpp
+@@ -11,7 +11,7 @@
+ #include "simplx.h"
+ #include "trz/connector/tcpconnector.hpp"
+ #include "trz/connector/http/server/server.hpp"
+-#include "trz/util/timer.h"
++// #include "trz/util/timer.h"  -- header does not exist in this repo and nothing here uses it
+ 
+ #include <fstream>
+ #include <sstream>
+diff --git a/vendor/simplx/include/trz/connector/tcp/client/circularbuffer.hpp b/vendor/simplx/include/trz/connector/tcp/client/circularbuffer.hpp
+index 5abb558..127b9bb 100644
+--- a/vendor/simplx/include/trz/connector/tcp/client/circularbuffer.hpp
++++ b/vendor/simplx/include/trz/connector/tcp/client/circularbuffer.hpp
+@@ -158,7 +158,6 @@ template <size_t _Capacity> class CircularBuffer
+         else
+         {
+             // [___R####W_____]
+-            assert(m_writerIndex >= 0);
+             assert(m_writerIndex <= _Capacity);
+             const size_t spaceAtEnd   = _Capacity - m_writerIndex;
+             const size_t toWriteAtEnd = min(size, spaceAtEnd);
+@@ -303,7 +302,6 @@ template <size_t _Capacity> class CircularBuffer
+         else
+         {
+             // contiguous chunk
+-            assert(m_readerIndex >= 0);
+             assert(m_readerIndex <= _Capacity);
+             const size_t spaceAtEnd  = _Capacity - m_readerIndex;
+             const size_t toReadAtEnd = min(size, spaceAtEnd);
+diff --git a/vendor/simplx/include/trz/engine/actor.h b/vendor/simplx/include/trz/engine/actor.h
+index bf87fb4..6a2ea13 100644
+--- a/vendor/simplx/include/trz/engine/actor.h
++++ b/vendor/simplx/include/trz/engine/actor.h
+@@ -58,7 +58,9 @@ struct FeatureNotImplementedException : std::exception
+  * @param e std::exception
+  * @note optionally break to debugger before throwing exception
+  */
+-inline void breakThrow(const std::exception &e) throw()
++// no exception specification: since C++17 (P0003R5) throw() means noexcept, and this
++// function's whole purpose is to throw -- keeping it would terminate() every caller
++inline void breakThrow(const std::exception &e)
+ {
+     TRZ_DEBUG_BREAK();
+ 
+@@ -1843,8 +1845,10 @@ public:
+     bool isRegisteredHighPriorityEventHandler(EventId) const noexcept;
+     bool isRegisteredEventHandler(EventId) const noexcept;
+     bool isRegisteredUndeliveredEventHandler(EventId) const noexcept;
+-    void registerCallback(void (*onCallback)(Callback &) /*noexcept*/, Callback &) noexcept;
+-    void registerPerformanceNeutralCallback(void (*onCallback)(Callback &) /*noexcept*/, Callback &) noexcept;
++    // noexcept is part of the function-pointer type since C++17 (P0012R1): it must be
++    // spelled here to match actor.cpp and the Callback::onCallback member type
++    void registerCallback(void (*onCallback)(Callback &) noexcept, Callback &) noexcept;
++    void registerPerformanceNeutralCallback(void (*onCallback)(Callback &) noexcept, Callback &) noexcept;
+     Actor *getSingletonActor(SingletonActorIndex) noexcept;
+     void reserveSingletonActor(SingletonActorIndex); // throw (CircularReferenceException)
+     void setSingletonActor(SingletonActorIndex, Actor &) noexcept;
+diff --git a/vendor/simplx/include/trz/engine/internal/time.h b/vendor/simplx/include/trz/engine/internal/time.h
+index fb62a72..bf3e6cb 100644
+--- a/vendor/simplx/include/trz/engine/internal/time.h
++++ b/vendor/simplx/include/trz/engine/internal/time.h
+@@ -200,6 +200,13 @@ class DateTime : public Time
+     {
+     }
+     
++    /**
++     * @brief Default copy constructor
++     * @note must be declared: the user-provided operator= below deprecates the
++     * implicit one (-Wdeprecated-copy), and Time already declares its own
++     */
++    DateTime(const DateTime &) noexcept = default;
++
+     DateTime &operator=(const DateTime &t) noexcept
+     {
+         Time::operator=(t);
+diff --git a/vendor/simplx/src/engine/linux/platform_linux.cpp b/vendor/simplx/src/engine/linux/platform_linux.cpp
+index 364076b..1a53a74 100644
+--- a/vendor/simplx/src/engine/linux/platform_linux.cpp
++++ b/vendor/simplx/src/engine/linux/platform_linux.cpp
+@@ -80,9 +80,16 @@ string  GetHostnameIP(const string &name)
+ 
+ //---- Exec (linux) command ----------------------------------------------------
+ 
++// deleter as a class type: decltype(&pclose) carries glibc function attributes
++// that GCC 13 rejects as a template argument (-Werror=ignored-attributes)
++struct PcloseDeleter
++{
++    void operator()(FILE *fp) const noexcept { ::pclose(fp); }
++};
++
+ vector<string> exec_command(const string cmd_s, const bool strip_whitespace_f)
+ {
+-    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd_s.c_str(), "r"), pclose);
++    unique_ptr<FILE, PcloseDeleter> pipe(popen(cmd_s.c_str(), "r"));
+     if (!pipe)  return {"error: popen() failed"};
+     
+     array<char, 512>    ascii_buffer;
