@@ -67,6 +67,19 @@ English term alongside, since virtually all the reading will be in English.
   Deliverable: [`research/01-simplx-build-and-run.md`](research/01-simplx-build-and-run.md),
   patch: [`research/01-simplx-cpp17.patch`](research/01-simplx-cpp17.patch).
 
+- [What one route step looks like on the page](issues/02-what-one-route-step-looks-like.md)
+  — **a step is capped, and the cap does the milestone-splitting.** Spine ≤ 65 lines,
+  whole step ≤ 150 lines / ~1,500 words, measured on the M1 write-up rather than
+  guessed. Steps are numbered independently and milestone-tagged; **M1 is two steps**.
+  The check that keeps splitting honest: every milestone acceptance criterion appears
+  in exactly one step's `gate — subject`. `read:` carries a one-line extract plus a
+  citation, never a summary — so **the research docs' section numbers are now an
+  interface** and must stay stable. Reading is costed in hours, building in multiples
+  of the M1 step. Three fields added: `after:`, `demo:`, and **`forces:` — decisions a
+  step makes irreversible**, which surfaced that **the subject never assigns the
+  oracle a language** (C++17 to A, Python to B, nothing to the oracle).
+  Deliverable: [`research/02-route-step-prototype.md`](research/02-route-step-prototype.md).
+
 - [Reading list: order books and market microstructure](issues/03-reading-order-books-microstructure.md)
   — ~20 sources, six stages; **~28–32 h and one book to buy** (Harris ch. 2/3/4/6)
   before M2, everything else free. The subject's order state machine **is FIX 4.4**
@@ -115,6 +128,13 @@ English term alongside, since virtually all the reading will be in English.
 
 ## Not yet specified
 
+- **Which side of the house the oracle lives on.** Surfaced by ticket 02: the subject
+  assigns C++17 to Exchange A and Python 3.12 to Exchange B, gives the oracle its own
+  top-level directory, and never says what it is written in. This is a design decision
+  and stays out of scope as one — but it has a *sequencing* consequence the route
+  cannot dodge: if the oracle is Python, then M1 is the first asyncio code and pulls
+  that reading forward ahead of M2; if it is C++, M1 pulls the modern-C++ on-ramp
+  forward instead. The route has to place the reading either way.
 - **How deep to go on options and Black-Scholes.** M9 is only 4 points but
   Black-Scholes, implied vol by bisection, and delta-hedging are a large theory
   detour. Downstream of the depth decision.
